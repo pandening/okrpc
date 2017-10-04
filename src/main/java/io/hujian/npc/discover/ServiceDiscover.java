@@ -62,7 +62,7 @@ public class ServiceDiscover {
      */
     private void updateService(List<String> dataList) {
 
-        NPC_LOGGER.error("Update the Service....");
+        NPC_LOGGER.warn("Update the Service....");
 
         ServiceManager.ServiceManagerHolder.SERVICE_MANAGER.updateService(dataList);
     }

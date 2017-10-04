@@ -39,8 +39,6 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ServiceManager {
     private static final NpcLogger NPC_LOGGER = NpcLogger.getLogger(ServiceManager.class.getName());
 
-    private static volatile Map<InetSocketAddress, Set<ServiceEntry>> serviceSetMap = new ConcurrentHashMap<>(); // the server set map
-
     //thread exception handler
     private static Thread.UncaughtExceptionHandler serviceManagerExceptionHandler =
             (t, e) -> NPC_LOGGER.error("Uncaught Exception from ServiceManager. threadName = " + t.getName(), e);
@@ -101,30 +99,9 @@ public class ServiceManager {
                 String tag = info[4].split("=")[1];
                 String version = info[5].split("=")[1];
 
-                serviceEntry = new ServiceEntry(ip, port, name,
-                        desc, tag, version);
+                serviceEntry = new ServiceEntry(ip, port, name, desc, tag, version);
 
                 serviceEntrySet.add(serviceEntry);
-
-                //new Service
-                InetSocketAddress inetSocketAddress = new InetSocketAddress(ip, Integer.parseInt(port));
-
-                Set<ServiceEntry> serviceEntries = serviceSetMap.get(inetSocketAddress);
-
-                if (serviceEntries == null) {
-                    serviceEntries = new HashSet<>();
-                }
-
-                if (serviceEntries.contains(serviceEntry)) {
-                    NPC_LOGGER.warn("The Service:" + serviceEntry + " existed.");
-                } else {
-                    serviceEntries.add(serviceEntry);
-
-                    NPC_LOGGER.warn("Add new ServiceEntry :" + serviceEntry + " ok");
-                }
-
-                //add it.
-                serviceSetMap.put(inetSocketAddress, serviceEntries);
 
             });
 
@@ -215,7 +192,7 @@ public class ServiceManager {
             //add listener
             channelFuture.addListener((ChannelFutureListener) cf -> {
                 if (cf.isSuccess()) {
-                    NPC_LOGGER.debug("Success to connect to remote server:" + inetSocketAddress);
+                    NPC_LOGGER.info("Success to connect to remote server:" + inetSocketAddress);
                     RpcClientHandler handler = channelFuture.channel().pipeline().get(RpcClientHandler.class);
 
                     addHandler(handler);
@@ -273,10 +250,10 @@ public class ServiceManager {
 
         this.isRunning = false;
 
-        for (int i = 0; i < connectedHandlers.size(); ++i) {
-            RpcClientHandler connectedServerHandler = connectedHandlers.get(i);
+        for (RpcClientHandler connectedServerHandler : connectedHandlers) {
             connectedServerHandler.close();
         }
+
         signalAvailableHandler();
 
         NPC_LOGGER.warn("Shutdown the executorService...");

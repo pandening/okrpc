@@ -17,4 +17,6 @@ public class NpcConstant {
     public static final String NPC_SERVICE_REGISTER_PATH = "/npc_service_register";
     public static final String NPC_SERVICE_DATA_PATH = NPC_SERVICE_REGISTER_PATH + "/data";
 
+    public static final String NPC_SERVICE_PUBLISH_XML_RESOURCE_FILE_PATH = "service-publish.xml";
+
 }
