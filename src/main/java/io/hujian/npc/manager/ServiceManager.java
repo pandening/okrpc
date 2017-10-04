@@ -3,6 +3,8 @@ package io.hujian.npc.manager;
 import io.hujian.npc.codec.RpcDecoder;
 import io.hujian.npc.codec.RpcEnCoder;
 import io.hujian.npc.logger.NpcLogger;
+import io.hujian.npc.pubisher.PublishBeanParser;
+import io.hujian.npc.pubisher.RpcServicePublishBean;
 import io.hujian.npc.register.ServiceEntry;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
@@ -74,8 +76,35 @@ public class ServiceManager {
     private AtomicInteger roundRobin = new AtomicInteger(0);
     private volatile boolean isRunning = true;
 
+    private final PublishBeanParser publishBeanParser = PublishBeanParser.PublishBeanParserHolder.PUBLISH_BEAN_PARSER;
+
+    private Map<String, Object> handlerMap = null; // the handler map
+
+    private Map<String, RpcServicePublishBean> publishBeanMap = null; // the bean map
+
     private ServiceManager() {
 
+        init();
+    }
+
+    /**
+     * assign the map
+     * @param map the handler map
+     */
+    public void assignHandlerMap(Map<String, Object> map) {
+        this.handlerMap = map;
+
+        NPC_LOGGER.warn("Success to get handler map, start to exchange information.");
+
+    }
+
+    /**
+     * parse the publish service
+     */
+    private void init() {
+        this.publishBeanMap = publishBeanParser.getWholeServiceBeans();
+
+        NPC_LOGGER.warn("Success to get service publish beans.");
     }
 
     /**

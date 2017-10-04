@@ -17,9 +17,6 @@ import java.util.Map;
  * {@link io.hujian.npc.common.NpcConstant#NPC_SERVICE_PUBLISH_XML_RESOURCE_FILE_PATH}
  * to publish your service. or , this rpc framework will just offer base implementation.
  *
- * and, you should using another thread to run this class's method, do not using the main
- * thread to do it!
- *
  */
 public class PublishBeanParser {
     private static final NpcLogger LOGGER = NpcLogger.getLogger(PublishBeanParser.class.getName());
@@ -39,7 +36,7 @@ public class PublishBeanParser {
 
         int size = applicationContext.getBeanDefinitionCount();
 
-        LOGGER.info("scan file:" +scanResourceFile + " find publish service: " +
+        LOGGER.error("scan file:" +scanResourceFile + " find publish service: " +
                 applicationContext.getBeanDefinitionCount());
 
         if (size == 0) {
@@ -53,7 +50,7 @@ public class PublishBeanParser {
             if ( (o = applicationContext.getBean(bean)) instanceof RpcServicePublishBean) {
                 beanMap.put(bean, (RpcServicePublishBean) o);
 
-                LOGGER.info("Find Publish Service:" + ((RpcServicePublishBean)o).toString());
+                LOGGER.error("Find Publish Service:" + o.toString());
             }
         }
 

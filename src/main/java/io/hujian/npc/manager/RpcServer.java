@@ -81,6 +81,9 @@ public class RpcServer implements ApplicationContextAware, InitializingBean {
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
+
+            ServiceManager.ServiceManagerHolder.SERVICE_MANAGER.assignHandlerMap(handlerMap);
+
             String[] array = serverAddress.split(":");
             String host = array[0];
             int port = Integer.parseInt(array[1]);
@@ -123,4 +126,5 @@ public class RpcServer implements ApplicationContextAware, InitializingBean {
 
         threadPoolExecutor.submit(task);
     }
+
 }
