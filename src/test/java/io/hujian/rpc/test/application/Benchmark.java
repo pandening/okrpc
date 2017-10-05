@@ -3,7 +3,6 @@ package io.hujian.rpc.test.application;
 import io.hujian.npc.discover.ServiceDiscover;
 import io.hujian.npc.manager.RpcClient;
 import io.hujian.rpc.test.client.HelloService;
-import org.junit.Assert;
 
 /**
  * Created by hujian06 on 2017/10/4.
@@ -18,7 +17,7 @@ public class Benchmark {
         final RpcClient rpcClient = new RpcClient(serviceDiscovery);
 
         int threadNum = 10;
-        final int requestNum = 20;
+        final int requestNum = 1000;
         Thread[] threads = new Thread[threadNum];
 
         long startTime = System.currentTimeMillis();

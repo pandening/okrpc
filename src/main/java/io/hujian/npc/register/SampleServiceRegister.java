@@ -14,6 +14,10 @@ import java.util.Objects;
 public class SampleServiceRegister implements ServiceRegister{
     private static final NpcLogger NPC_LOGGER = NpcLogger.getLogger(SampleServiceRegister.class.getName());
 
+    public static class SampleServiceRegisterHolder {
+        public static final SampleServiceRegister SAMPLE_SERVICE_REGISTER = new SampleServiceRegister();
+    }
+
     private static final ZookeeperClient ZOOKEEPER_CLIENT = ZookeeperClient.ZookeeperClientFactory.sharedZkClient();
 
     private static final String SERVICE_REGISTER_PATH = NpcConstant.NPC_SERVICE_REGISTER_PATH;
@@ -44,6 +48,13 @@ public class SampleServiceRegister implements ServiceRegister{
 
                 NPC_LOGGER.warn("Success to create the service register root node.");
             }
+
+            if (!ZOOKEEPER_CLIENT.exists(SERVICE_DATA_PATH)) {
+                ZOOKEEPER_CLIENT.create(SERVICE_DATA_PATH);
+
+                NPC_LOGGER.warn("Success to create the service register data node.");
+            }
+
         } catch (Exception e) {
 
             NPC_LOGGER.error("Error When using exists", e);
@@ -64,7 +75,7 @@ public class SampleServiceRegister implements ServiceRegister{
             createServiceRegisterRootNode();
 
             try {
-                ZOOKEEPER_CLIENT.create(SERVICE_DATA_PATH, data);
+                ZOOKEEPER_CLIENT.create(SERVICE_DATA_PATH + "/" + data, data);
 
                 NPC_LOGGER.warn("Success to register the service:" + data + " to zookeeper Server");
             } catch (Exception e) {

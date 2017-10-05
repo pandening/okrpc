@@ -5,7 +5,6 @@ import io.hujian.npc.manager.IAsyncObjectProxy;
 import io.hujian.npc.manager.RPCFuture;
 import io.hujian.npc.manager.RpcClient;
 import io.hujian.rpc.test.client.HelloService;
-import org.junit.Assert;
 
 import java.util.concurrent.TimeUnit;
 

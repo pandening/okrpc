@@ -1,8 +1,6 @@
 package io.hujian.npc.manager;
 
 import io.hujian.npc.logger.NpcLogger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;

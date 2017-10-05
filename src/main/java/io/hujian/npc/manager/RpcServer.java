@@ -3,10 +3,7 @@ package io.hujian.npc.manager;
 import io.hujian.npc.codec.RpcDecoder;
 import io.hujian.npc.codec.RpcEnCoder;
 import io.hujian.npc.logger.NpcLogger;
-import io.hujian.npc.register.ServiceEntry;
-import io.hujian.npc.register.ServiceRegister;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -33,20 +30,12 @@ import java.util.concurrent.TimeUnit;
 public class RpcServer implements ApplicationContextAware, InitializingBean {
     private static final NpcLogger LOGGER = NpcLogger.getLogger(RpcServer.class.getName());
 
-    private String serverAddress;
-    private ServiceRegister serviceRegistry;
-
     private Map<String, Object> handlerMap = new HashMap<>();
 
     private static volatile ThreadPoolExecutor threadPoolExecutor;
 
-    public RpcServer(String serverAddress) {
-        this.serverAddress = serverAddress;
-    }
+    public RpcServer() {
 
-    public RpcServer(String serverAddress, ServiceRegister serviceRegistry) {
-        this.serverAddress = serverAddress;
-        this.serviceRegistry = serviceRegistry;
     }
 
     @Override
@@ -82,26 +71,10 @@ public class RpcServer implements ApplicationContextAware, InitializingBean {
                     .option(ChannelOption.SO_BACKLOG, 128)
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
 
-            ServiceManager.ServiceManagerHolder.SERVICE_MANAGER.assignHandlerMap(handlerMap);
+            //boot the server
+            ServiceManager.ServiceManagerHolder.SERVICE_MANAGER.bootRpcServer(handlerMap, bootstrap);
 
-            String[] array = serverAddress.split(":");
-            String host = array[0];
-            int port = Integer.parseInt(array[1]);
-            ChannelFuture future = bootstrap.bind(host, port).sync();
-
-            LOGGER.warn("Rpc Server Start on :" + host + ":" + port);
-
-            if (serviceRegistry != null) {
-                ServiceEntry serviceEntry = new ServiceEntry();
-                serviceEntry.setServiceIp(host);
-                serviceEntry.setServicePort(String.valueOf(port));
-
-                LOGGER.warn("Just ip and port to Register.");
-
-                serviceRegistry.registerService(serviceEntry);
-            }
-
-            future.channel().closeFuture().sync();
+            LOGGER.warn("Start the RpcServer ok.");
         } finally {
             workerGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();
@@ -117,7 +90,7 @@ public class RpcServer implements ApplicationContextAware, InitializingBean {
             synchronized (RpcServer.class) {
                 if(threadPoolExecutor == null){
                     threadPoolExecutor =
-                            new ThreadPoolExecutor(16, 16,
+                            new ThreadPoolExecutor(16, 16 * 2,
                                     600L, TimeUnit.SECONDS,
                                     new ArrayBlockingQueue<Runnable>(65536));
                 }

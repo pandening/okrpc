@@ -14,16 +14,16 @@ import lombok.Setter;
 public class RpcServicePublishBean {
     private static final NpcLogger NPC_LOGGER = NpcLogger.getLogger(RpcServicePublishBean.class.getName());
 
-    private String url; // the service url, ensure unique.
-    private String interfaceName; // the interface
-    private String serialize; // the serialize method.
-    private String callType; // the callType
-    private int retries; // try time
-    private int timeout; // the timeout value (ms)
-    private String version; // version
+    private String url = ""; // the service url, ensure unique.
+    private String interfaceName = ""; // the interface
+    private String serialize = ""; // the serialize method.
+    private String callType = ""; // the callType
+    private int retries = 1; // try time
+    private int timeout = 4000; // the timeout value (ms)
+    private String version = ""; // version
 
     private RpcNodeGroup nodeGroup; // the nodeGroup.
-    private String loadBalance; // loadBalance
+    private String loadBalance = ""; // loadBalance
 
     public RpcServicePublishBean() {
         serialize = SerializeType.PROTOSTUFF.getDesc(); // this is the default
@@ -31,6 +31,7 @@ public class RpcServicePublishBean {
         loadBalance = LoadBalanceType.ROUND_ROBIN.getDesc();// round robin.
         retries = 1; // 1 time
         timeout = 4000; // 4s
+        nodeGroup = new RpcNodeGroup();
 
         NPC_LOGGER.info("constructor of RpcServicePublishBean run.");
     }

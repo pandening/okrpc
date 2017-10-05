@@ -9,16 +9,16 @@
 
     <bean id="nodeList" class="io.hujian.npc.pubisher.RpcNodeGroup">
         <property name="nodeGroupName" value="test-node-list-group"/>
-        <property name="nodeList">
-            <set>
-                <value>127.0.0.1:16688:1</value>
-                <value>127.0.0.1:16689:1</value>
-                <value>127.0.0.1:16690:2</value>
-            </set>
-        </property>
+        <property name="nodeList" value="127.0.0.1:16688:1"/>
     </bean>
 
-    <bean id="service_a" class="io.hujian.npc.pubisher.RpcServicePublishBean">
+    <bean id="helloService" class="io.hujian.npc.pubisher.RpcServicePublishBean">
+        <property name="version" value="1.0.0"/>
+        <property name="interfaceName" value="HelloService"/>
+        <property name="url" value="rpc://io.hujian.rpc.test.client.HelloService"/>
+    </bean>
+
+    <!-- bean id="service_a" class="io.hujian.npc.pubisher.RpcServicePublishBean">
         <property name="interfaceName" value="EchoService"/>
         <property name="nodeGroup" ref="nodeList"/>
         <property name="url" value="rpc://io.hujian.rpc.test.client.HelloService"/>
@@ -40,6 +40,6 @@
         <property name="url" value="rpc://io.hujian.rpc.test.client.HelloService"/>
         <property name="retries" value="1"/>
         <property name="version" value="1.0.0"/>
-    </bean>
+    </bean -->
 
 </beans>

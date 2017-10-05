@@ -33,14 +33,14 @@ public class ServiceDiscover {
      */
     private void watchNode() {
         try {
-            List<String> nodeList = ZOOKEEPER_CLIENT.getChildren(NpcConstant.NPC_SERVICE_REGISTER_PATH, watchedEvent -> {
+            List<String> nodeList = ZOOKEEPER_CLIENT.getChildren(NpcConstant.NPC_SERVICE_DATA_PATH, watchedEvent -> {
                 if (watchedEvent.getType() == Watcher.Event.EventType.NodeChildrenChanged) {
                     watchNode();
                 }
             });
             List<String> dataList = new ArrayList<>();
             for (String node : nodeList) {
-                 dataList.add(ZOOKEEPER_CLIENT.get(NpcConstant.NPC_SERVICE_REGISTER_PATH + "/" + node,
+                 dataList.add(ZOOKEEPER_CLIENT.get(NpcConstant.NPC_SERVICE_DATA_PATH + "/" + node,
                          false));
             }
 

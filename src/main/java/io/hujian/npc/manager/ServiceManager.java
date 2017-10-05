@@ -4,9 +4,12 @@ import io.hujian.npc.codec.RpcDecoder;
 import io.hujian.npc.codec.RpcEnCoder;
 import io.hujian.npc.logger.NpcLogger;
 import io.hujian.npc.pubisher.PublishBeanParser;
+import io.hujian.npc.pubisher.RpcNodeGroup;
 import io.hujian.npc.pubisher.RpcServicePublishBean;
+import io.hujian.npc.register.SampleServiceRegister;
 import io.hujian.npc.register.ServiceEntry;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
@@ -66,7 +69,7 @@ public class ServiceManager {
         public static final ServiceManager SERVICE_MANAGER = new ServiceManager();
     }
 
-    private EventLoopGroup eventExecutors = new NioEventLoopGroup(10);
+    private EventLoopGroup eventExecutors = new NioEventLoopGroup(16);
 
     private CopyOnWriteArrayList<RpcClientHandler> connectedHandlers = new CopyOnWriteArrayList<>();
     private Map<InetSocketAddress, RpcClientHandler> connectedServerNodes = new ConcurrentHashMap<>();
@@ -80,22 +83,87 @@ public class ServiceManager {
 
     private Map<String, Object> handlerMap = null; // the handler map
 
+    private ServerBootstrap serverBootstrap; // the RpcServer BootStrap
+
     private Map<String, RpcServicePublishBean> publishBeanMap = null; // the bean map
 
     private ServiceManager() {
 
-        init();
     }
 
     /**
-     * assign the map
+     * assign the map, do not forget to register the service at this method.
      * @param map the handler map
+     * @param bootstrap the bootstrap
      */
-    public void assignHandlerMap(Map<String, Object> map) {
+    public void bootRpcServer(Map<String, Object> map, ServerBootstrap bootstrap) {
         this.handlerMap = map;
+        this.serverBootstrap = bootstrap;
 
-        NPC_LOGGER.warn("Success to get handler map, start to exchange information.");
+        init();
 
+        NPC_LOGGER.warn("Get the handler map and bootstrap, start to boot the rpc Server");
+
+        final String[] ip_port_weight = {""};
+        final String[] services = {""};
+
+        this.publishBeanMap.forEach((service, publishBean) -> {
+
+            String version = publishBean.getVersion();
+            String serviceName = publishBean.getInterfaceName();
+
+            RpcNodeGroup rpcNodeGroup = publishBean.getNodeGroup();
+
+            if (rpcNodeGroup == null || rpcNodeGroup.getNodeList() == null ||
+                    rpcNodeGroup.getNodeList().isEmpty()) {
+                NPC_LOGGER.error("No Service Node for Service:" + service);
+
+                return;
+            }
+
+            ip_port_weight[0] = rpcNodeGroup.getNodeList();
+
+            String[] info = ip_port_weight[0].split(":");
+            ServiceEntry serviceEntry = new ServiceEntry();
+
+            serviceEntry.setServiceIp(info[0]);
+            serviceEntry.setServicePort(info[1]);
+            serviceEntry.setServiceVersion(version);
+            serviceEntry.setServiceName(serviceName);
+
+            services[0] += serviceEntry.toString() + "\n";
+
+            SampleServiceRegister.SampleServiceRegisterHolder.SAMPLE_SERVICE_REGISTER
+                    .registerService(serviceEntry);
+
+        });
+
+        String[] info = ip_port_weight[0].split(":");
+        String host = info[0];
+        int port = Integer.parseInt(info[1]);
+        //open the channel
+        ChannelFuture channelFuture = null;
+        NPC_LOGGER.warn("Try to start RpcServer on :" + host + ":" + port + " for service:" + services[0]);
+        try {
+            channelFuture =
+                    serverBootstrap.bind(new InetSocketAddress(host, port)).sync();
+
+            NPC_LOGGER.warn("RpcServer start on :" + host + ":" + port + " for service:" + services[0]);
+        } catch (InterruptedException e) {
+
+            NPC_LOGGER.error("Could not start RpcServer for Service:" + services[0] + " on :" + host + ":" + port, e);
+        } finally {
+            if (channelFuture != null) {
+                try {
+                    channelFuture.channel().closeFuture().sync();
+
+                    NPC_LOGGER.warn("Success to close the RpcServer:" + host + ":" + port);
+                } catch (InterruptedException e) {
+
+                    NPC_LOGGER.error("Could not close the Rpc Server:" + host + ":" + port + " for service:" + services[0], e);
+                }
+            }
+        }
     }
 
     /**
@@ -104,7 +172,7 @@ public class ServiceManager {
     private void init() {
         this.publishBeanMap = publishBeanParser.getWholeServiceBeans();
 
-        NPC_LOGGER.warn("Success to get service publish beans.");
+        NPC_LOGGER.warn("Success to get service publish beans.[" + this.publishBeanMap.size() + "]");
     }
 
     /**
@@ -116,7 +184,6 @@ public class ServiceManager {
             Set<ServiceEntry> serviceEntrySet = new HashSet<>();
 
             dataList.forEach(data -> {
-
                 ServiceEntry serviceEntry;
                 String[] info = data.split("#");
 
