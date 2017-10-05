@@ -42,4 +42,13 @@
         <property name="version" value="1.0.0"/>
     </bean>
 
+    <bean id="baseBean" class="io.hujian.npc.spring.BaseBean" init-method="init" destroy-method="destroy">
+        <constructor-arg name="desc" value="hello"/>
+    </bean>
+
+    <bean id="lifeCycleBean" class="io.hujian.npc.spring.LifeCycleBean" init-method="init" destroy-method="destroy">
+        <property name="baseBean" ref="baseBean"/>
+        <property name="desc" value="hello"/>
+     </bean>
+
 </beans>

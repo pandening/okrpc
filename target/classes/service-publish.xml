@@ -48,7 +48,22 @@
 
     <bean id="lifeCycleBean" class="io.hujian.npc.spring.LifeCycleBean" init-method="init" destroy-method="destroy">
         <property name="baseBean" ref="baseBean"/>
+        <property name="beanFactoryPostProcessBaseBean" ref="bfPostBaseBean"/>
         <property name="desc" value="hello"/>
      </bean>
+
+    <bean class="io.hujian.npc.spring.FakeBeanFactoryPostProcess"/>
+
+    <bean class="io.hujian.npc.spring.FakeBeanPostProcess"/>
+
+    <bean class="io.hujian.npc.spring.FakeInstantiationAwareBeanPostProcess"/>
+
+    <bean id="fakeBeanNameAware" class="io.hujian.npc.spring.FakeBeanNameAware"/>
+
+    <bean id="fakeBeanFactoryAware" class="io.hujian.npc.spring.FakeBeanFactoryAware"/>
+
+    <bean class="io.hujian.npc.spring.FakeDisposableBean"/>
+
+    <bean class="io.hujian.npc.spring.FakeInitializingBean"/>
 
 </beans>
